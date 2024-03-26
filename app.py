@@ -52,7 +52,7 @@ if uploaded_file is not None:
     cleaned_df = df.applymap(replace_ascii_chars)
     
     # Check if ASCII characters were found and replaced
-    ascii_found = any('<0x' in cell for row in cleaned_df.values for cell in row)
+    ascii_found = any('<0x' in str(cell) for row in cleaned_df.values for cell in row)
     if ascii_found:
         # Display a message indicating that ASCII characters were found and replaced
         st.info('ASCII characters were found and have been replaced with searchable strings.')
