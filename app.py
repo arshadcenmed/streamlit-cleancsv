@@ -6,7 +6,10 @@ from io import StringIO, BytesIO
 import base64
 
 # Streamlit app title
-st.title('CSV File Cleaner')
+st.title('ASCII characters checker')
+st.text('This app will first check the csv file format. It will convert file to utf8 format.')
+st.text('It will then check the CSV file for any ASCII characters and convert them into searchable strings.')
+st.text('If found, download the file and search for <0x in your text editor.')
 
 # File uploader allows user to add their own CSV
 uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'])
@@ -44,6 +47,15 @@ if uploaded_file is not None:
     
     # Apply the function to every cell in the DataFrame
     cleaned_df = df.applymap(replace_ascii_chars)
+    
+    # Check if ASCII characters were found and replaced
+    ascii_found = any('<0x' in cell for row in cleaned_df.values for cell in row)
+    if ascii_found:
+        # Display a message indicating that ASCII characters were found and replaced
+        st.info('ASCII characters were found and have been replaced with searchable strings.')
+    else:
+        # Optionally, display a message if no ASCII characters were found
+        st.write('No ASCII characters were found in the file.')
     
     # Convert DataFrame to CSV for download
     output_csv = cleaned_df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8')
