@@ -3,6 +3,7 @@ import pandas as pd
 import csv
 import chardet
 from io import StringIO, BytesIO
+import base64
 
 # Streamlit app title
 st.title('CSV File Cleaner')
