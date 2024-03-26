@@ -40,7 +40,10 @@ if uploaded_file is not None:
     def replace_ascii_chars(s):
         if isinstance(s, str):
             return ''.join(ascii_replacements.get(ord(char), char) for char in s)
-        return s
+        elif pd.isnull(s):
+            return s  # Return as is if the value is NaN
+        else:
+            return str(s)  # Convert non-string, non-null values to string
     
     # Read the CSV file into a pandas DataFrame
     df = pd.read_csv(string_io_data, sep=',')
