@@ -7,12 +7,15 @@ import base64
 
 # Streamlit app title
 st.title('ASCII characters checker')
-st.text('This app will first check the csv file format. It will convert file to utf8 format.')
+st.text('This app will first check the csv file format.')
 st.text('It will then check the CSV file for any ASCII characters and convert them into searchable strings.')
 st.text('If found, download the file and search for <0x in your text editor.')
 
 # File uploader allows user to add their own CSV
 uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'])
+
+# Checkbox for user to choose encoding conversion
+convert_to_utf8 = st.checkbox("Convert file to UTF-8", value=True)
 
 if uploaded_file is not None:
     # To read file as string:
@@ -23,13 +26,17 @@ if uploaded_file is not None:
     original_encoding = result['encoding']
     st.write(f"Detected encoding: {original_encoding}")  # Display the detected encoding
     
-    # If the file is not already UTF-8, convert it
-    if original_encoding != 'utf-8':
+    # If the user wants to convert to UTF-8 and the file is not already UTF-8, convert it
+    if convert_to_utf8 and original_encoding != 'utf-8':
         string_data = bytes_data.decode(original_encoding)  # Decode using the detected encoding
         bytes_data = string_data.encode('utf-8')  # Encode to UTF-8
+    elif not convert_to_utf8:
+        # If user does not want to convert to UTF-8, ensure it's in ASCII
+        string_data = bytes_data.decode(original_encoding, errors='replace')  # Decode with replacement
+        bytes_data = string_data.encode('ascii', errors='replace')  # Encode to ASCII with replacement for non-ASCII characters
     
     # Convert bytes data to a StringIO object for pandas
-    string_io_data = StringIO(bytes_data.decode('utf-8'))
+    string_io_data = StringIO(bytes_data.decode('utf-8' if convert_to_utf8 else 'ascii'))
     
     # Define a mapping of non-printable ASCII characters to their visible equivalents
     ascii_replacements = {
@@ -61,7 +68,7 @@ if uploaded_file is not None:
         st.write('No ASCII characters were found in the file.')
     
     # Convert DataFrame to CSV for download
-    output_csv = cleaned_df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8')
+    output_csv = cleaned_df.to_csv(index=False, quoting=csv.QUOTE_NONNUMERIC, encoding='utf-8' if convert_to_utf8 else 'ascii')
     
     # Create a link for downloading the cleaned CSV
     b64 = base64.b64encode(output_csv.encode()).decode()  # some strings <-> bytes conversions necessary here
